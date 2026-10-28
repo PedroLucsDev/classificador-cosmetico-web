@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Cosmetic Classifier</title>
+  <style>
+    body { font-family: sans-serif; max-width: 700px; margin: 40px auto; padding: 0 20px; line-height: 1.5; }
+    input, textarea, button { width: 100%; padding: 10px; margin-top: 8px; box-sizing: border-box; }
+    button { background-color: #2563eb; color: white; border: none; cursor: pointer; margin-top: 12px; }
+    .card { background: #f3f4f6; padding: 15px; border-radius: 6px; margin-top: 15px; }
+    .result { margin-top: 15px; font-weight: bold; color: #1e40af; }
+  </style>
+</head>
+<body>
+
+  <h1>Classificador de Cosméticos</h1>
+  <p>Teste o modelo de Machine Learning informando ingredientes ou descrição de um produto:</p>
+
+  <textarea id="textoInput" rows="3" placeholder="Ex: Óleo vegetal nutritivo para hidratação de pontas secas..."></textarea>
+  <button onclick="classificar()">Classificar Categoria</button>
+
+  <div id="resultado" class="result"></div>
+
+  <hr style="margin: 30px 0;">
+
+  <h2>Produtos Coletados</h2>
+  <div id="listaProdutos">Carregando catálogo...</div>
+
+  <script>
+    async function carregarProdutos() {
+      const res = await fetch('/produtos');
+      const produtos = await res.json();
+      const div = document.getElementById('listaProdutos');
+      div.innerHTML = produtos.map(p => `
+        <div class="card">
+          <strong>${p.nome}</strong> (${p.marca})<br>
+          <small>Categoria: <b>${p.categoria}</b></small><br>
+          <span>${p.descricao}</span>
+        </div>
+      `).join('');
+    }
+
+    async function classificar() {
+      const texto = document.getElementById('textoInput').value;
+      const resDiv = document.getElementById('resultado');
+      resDiv.innerText = 'Processando...';
+
+      const res = await fetch('/classificar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ texto })
+      });
+
+      const data = await res.json();
+      resDiv.innerText = 'Categoria Prevista: ' + data.categoria_prevista;
+    }
+
+    carregarProdutos();
+  </script>
+</body>
+</html>
